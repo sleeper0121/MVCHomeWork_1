@@ -7,6 +7,7 @@ using System.Net;
 using System.Web;
 using System.Web.Mvc;
 using MyMVCTest01.Models;
+using System.Data.Entity.Validation;
 
 namespace MyMVCTest01.Controllers
 {
@@ -119,7 +120,13 @@ namespace MyMVCTest01.Controllers
             客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);
             //db.客戶聯絡人.Remove(客戶聯絡人);
             客戶聯絡人.是否已刪除 = true;
-            db.SaveChanges();
+            try
+            {
+                db.SaveChanges();
+            }
+            catch (DbEntityValidationException ex)
+            {
+            }
             return RedirectToAction("Index");
         }
 
