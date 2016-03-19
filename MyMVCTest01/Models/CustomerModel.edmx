@@ -40,6 +40,7 @@
           <Property Name="地址" Type="nvarchar" MaxLength="100" />
           <Property Name="Email" Type="nvarchar" MaxLength="250" />
           <Property Name="是否已刪除" Type="bit" Nullable="false" />
+          <Property Name="客戶分類" Type="nvarchar" MaxLength="50" Nullable="false" />
         </EntityType>
         <EntityType Name="客戶銀行資訊">
           <Key>
@@ -59,8 +60,10 @@
         <EntityType Name="客戶列表">
           <Key>
             <PropertyRef Name="客戶名稱" />
+            <PropertyRef Name="客戶分類" />
           </Key>
           <Property Name="客戶名稱" Type="nvarchar" MaxLength="50" Nullable="false" />
+          <Property Name="客戶分類" Type="nvarchar" MaxLength="50" Nullable="false" />
           <Property Name="聯絡人數量" Type="int" />
           <Property Name="銀行帳戶數量" Type="int" />
         </EntityType>
@@ -127,6 +130,7 @@
           <EntitySet Name="客戶列表" EntityType="Self.客戶列表" store:Type="Views" store:Schema="dbo">
             <DefiningQuery>SELECT 
     [客戶列表].[客戶名稱] AS [客戶名稱], 
+    [客戶列表].[客戶分類] AS [客戶分類], 
     [客戶列表].[聯絡人數量] AS [聯絡人數量], 
     [客戶列表].[銀行帳戶數量] AS [銀行帳戶數量]
     FROM [dbo].[客戶列表] AS [客戶列表]</DefiningQuery>
@@ -182,6 +186,7 @@
           <NavigationProperty Name="客戶聯絡人" Relationship="Self.FK_客戶聯絡人_客戶資料" FromRole="客戶資料" ToRole="客戶聯絡人" />
           <NavigationProperty Name="客戶銀行資訊" Relationship="Self.FK_客戶銀行資訊_客戶資料" FromRole="客戶資料" ToRole="客戶銀行資訊" />
           <Property Name="是否已刪除" Type="Boolean" Nullable="false" />
+          <Property Name="客戶分類" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
         <EntityType Name="客戶銀行資訊">
           <Key>
@@ -280,10 +285,12 @@
         <EntityType Name="客戶列表">
           <Key>
             <PropertyRef Name="客戶名稱" />
+            <PropertyRef Name="客戶分類" />
           </Key>
           <Property Name="客戶名稱" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
           <Property Name="聯絡人數量" Type="Int32" />
           <Property Name="銀行帳戶數量" Type="Int32" />
+          <Property Name="客戶分類" Type="String" Nullable="false" MaxLength="50" FixedLength="false" Unicode="true" />
         </EntityType>
       </Schema>
     </edmx:ConceptualModels>
@@ -319,6 +326,7 @@
           <EntitySetMapping Name="客戶資料">
             <EntityTypeMapping TypeName="客戶資料Model.客戶資料">
               <MappingFragment StoreEntitySet="客戶資料">
+                <ScalarProperty Name="客戶分類" ColumnName="客戶分類" />
                 <ScalarProperty Name="是否已刪除" ColumnName="是否已刪除" />
                 <ScalarProperty Name="Id" ColumnName="Id" />
                 <ScalarProperty Name="客戶名稱" ColumnName="客戶名稱" />
@@ -371,6 +379,7 @@
           <EntitySetMapping Name="客戶列表">
             <EntityTypeMapping TypeName="客戶資料Model.客戶列表">
               <MappingFragment StoreEntitySet="客戶列表">
+                <ScalarProperty Name="客戶分類" ColumnName="客戶分類" />
                 <ScalarProperty Name="銀行帳戶數量" ColumnName="銀行帳戶數量" />
                 <ScalarProperty Name="聯絡人數量" ColumnName="聯絡人數量" />
                 <ScalarProperty Name="客戶名稱" ColumnName="客戶名稱" />

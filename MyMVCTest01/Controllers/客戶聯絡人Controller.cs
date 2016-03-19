@@ -13,15 +13,96 @@ namespace MyMVCTest01.Controllers
 {
     public class 客戶聯絡人Controller : Controller
     {
-        private 客戶資料Entities db = new 客戶資料Entities();
+        //private 客戶資料Entities db = new 客戶資料Entities();
+
+        private 客戶聯絡人Repository repo = null;
+
+        public 客戶聯絡人Repository Repo
+        {
+            get {
+                if (repo == null)
+                {
+                    return repo = RepositoryHelper.Get客戶聯絡人Repository();
+                }
+                else{
+                    return repo;
+                }
+            }                
+        }
+
+        private 客戶資料Repository repoC = null;
+
+        public 客戶資料Repository RepoC
+        {
+            get
+            {
+                if (repoC == null)
+                {
+                    return repoC = RepositoryHelper.Get客戶資料Repository(Repo.UnitOfWork);
+                }
+                else {
+                    return repoC;
+                }
+            }
+        }
+
+
+
 
         // GET: 客戶聯絡人
         public ActionResult Index()
         {
-            //var 客戶 = db.客戶資料.Where(c => c.是否已刪除 == false);
-            var 客戶聯絡人 = db.客戶聯絡人.Include("客戶資料").Where(p => p.是否已刪除 == false).Where(q => q.客戶資料.是否已刪除 == false);
-            return View(客戶聯絡人.ToList());
+  
+            //var 客戶聯絡人 = db.客戶聯絡人.Include("客戶資料").Where(p => p.是否已刪除 == false).Where(q => q.客戶資料.是否已刪除 == false);
+
+
+            return View(Repo.All().ToList());
         }
+
+        [HttpPost]
+        public ActionResult Index(string position)
+        {
+            if (!string.IsNullOrWhiteSpace(position))
+            {
+                var data = Repo.All().Where(p => p.職稱 == position);
+                ViewBag.Msg = data.Count();
+                return View(data);
+            }
+            else
+            {
+                ViewBag.Msg = "No data found";
+                return View();
+            }
+
+        }
+
+
+        public ActionResult GetContactsList(int? id)
+        {
+            if (id.HasValue)
+            {
+                var data = Repo.All().Where(p => p.客戶Id == id);
+                return View(data);
+            }
+            return View();
+        }
+
+        [HttpPost]
+        public ActionResult GetContactsList(IList<客戶聯絡人> data)
+        {
+            foreach (客戶聯絡人 item in data)
+            {
+                var contacter = Repo.Find(item.Id);
+                contacter.職稱 = item.職稱;
+                contacter.手機 = item.手機;
+                contacter.電話 = item.電話;
+            }
+            Repo.UnitOfWork.Commit();
+            //return RedirectToAction("Index","客戶資料");
+            return View(data);
+        }
+
+
 
         // GET: 客戶聯絡人/Details/5
         public ActionResult Details(int? id)
@@ -30,7 +111,8 @@ namespace MyMVCTest01.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);
+            //客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);
+            客戶聯絡人 客戶聯絡人 = Repo.Find(id);
             if (客戶聯絡人 == null)
             {
                 return HttpNotFound();
@@ -41,7 +123,9 @@ namespace MyMVCTest01.Controllers
         // GET: 客戶聯絡人/Create
         public ActionResult Create()
         {
-            ViewBag.客戶Id = new SelectList(db.客戶資料.Where(p => p.是否已刪除 == false), "Id", "客戶名稱");
+            //ViewBag.客戶Id = new SelectList(db.客戶資料.Where(p => p.是否已刪除 == false), "Id", "客戶名稱");
+
+            ViewBag.客戶Id = new SelectList(RepoC.All(), "Id", "客戶名稱");
             return View();
         }
 
@@ -54,11 +138,12 @@ namespace MyMVCTest01.Controllers
         {
             if (ModelState.IsValid)
             {
-                    db.客戶聯絡人.Add(客戶聯絡人);
-                    db.SaveChanges();                    
-                    return RedirectToAction("Index");
+                Repo.Add(客戶聯絡人);
+                Repo.UnitOfWork.Commit();
+                return RedirectToAction("Index");
             }
-            ViewBag.客戶Id = new SelectList(db.客戶資料, "Id", "客戶名稱");
+  
+            ViewBag.客戶Id = new SelectList(RepoC.All() , "Id", "客戶名稱");
             return View();
         }
 
@@ -71,12 +156,13 @@ namespace MyMVCTest01.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);
+            //客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);
+            客戶聯絡人 客戶聯絡人 = Repo.Find(id);
             if (客戶聯絡人 == null)
             {
                 return HttpNotFound();
             }
-            ViewBag.客戶Id = new SelectList(db.客戶資料, "Id", "客戶名稱", 客戶聯絡人.客戶Id);
+            ViewBag.客戶Id = new SelectList(RepoC.All(), "Id", "客戶名稱", 客戶聯絡人.客戶Id);
             return View(客戶聯絡人);
         }
 
@@ -89,11 +175,12 @@ namespace MyMVCTest01.Controllers
         {
             if (ModelState.IsValid)
             {
+                var db = (客戶資料Entities)Repo.UnitOfWork.Context;
                 db.Entry(客戶聯絡人).State = EntityState.Modified;
-                db.SaveChanges();
+                Repo.UnitOfWork.Commit();
                 return RedirectToAction("Index");
             }
-            ViewBag.客戶Id = new SelectList(db.客戶資料, "Id", "客戶名稱", 客戶聯絡人.客戶Id);
+            ViewBag.客戶Id = new SelectList(RepoC.All(), "Id", "客戶名稱", 客戶聯絡人.客戶Id);
             return View(客戶聯絡人);
         }
 
@@ -104,7 +191,8 @@ namespace MyMVCTest01.Controllers
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);
+            //客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);
+            客戶聯絡人 客戶聯絡人 = Repo.Find(id);
             if (客戶聯絡人 == null)
             {
                 return HttpNotFound();
@@ -117,16 +205,16 @@ namespace MyMVCTest01.Controllers
         [ValidateAntiForgeryToken]
         public ActionResult DeleteConfirmed(int id)
         {
-            客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);
-            //db.客戶聯絡人.Remove(客戶聯絡人);
+            //客戶聯絡人 客戶聯絡人 = db.客戶聯絡人.Find(id);
+            ////db.客戶聯絡人.Remove(客戶聯絡人);
+            //客戶聯絡人.是否已刪除 = true;
+            //db.SaveChanges();
+
+
+            客戶聯絡人 客戶聯絡人 = Repo.Find(id);
             客戶聯絡人.是否已刪除 = true;
-            try
-            {
-                db.SaveChanges();
-            }
-            catch (DbEntityValidationException ex)
-            {
-            }
+            Repo.UnitOfWork.Commit();
+
             return RedirectToAction("Index");
         }
 
@@ -134,6 +222,7 @@ namespace MyMVCTest01.Controllers
         {
             if (disposing)
             {
+                var db = (客戶資料Entities)Repo.UnitOfWork.Context;
                 db.Dispose();
             }
             base.Dispose(disposing);

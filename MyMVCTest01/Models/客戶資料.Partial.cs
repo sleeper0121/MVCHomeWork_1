@@ -36,7 +36,9 @@ namespace MyMVCTest01.Models
         public string Email { get; set; }
         [Required]
         public bool 是否已刪除 { get; set; }
-    
+
+        public string 客戶分類 { get; set; }
+
         public virtual ICollection<客戶聯絡人> 客戶聯絡人 { get; set; }
         public virtual ICollection<客戶銀行資訊> 客戶銀行資訊 { get; set; }
     }
